@@ -175,6 +175,12 @@ async function viewRecipe(id) {
   $("dlgView").showModal();
 }
 
+$("btnEditRecipe").addEventListener("click", () => {
+  if (!state.viewingRecipe) return;
+  dlgView.close();
+  openRecipeDialog(state.viewingRecipe);
+});
+
 $("btnPlanRecipe").addEventListener("click", () => {
   if (!state.viewingRecipe) return;
   openPlanDays(state.viewingRecipe);
