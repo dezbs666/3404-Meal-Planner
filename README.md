@@ -46,6 +46,23 @@ app. Both of you see and edit the same list.
 
 On Windows, use `set MEALPLANNER_HOST=0.0.0.0` before `python app.py`.
 
+### Installing on a Raspberry Pi (Linux)
+
+From a PC that can reach the Pi (e.g. over Tailscale SSH), spot it on, clone
+the repo, and run the installer once — the app then runs as a service and
+starts automatically at boot:
+
+```bash
+ssh <user>@<pi-address>
+git clone https://github.com/dezbs666/3404-Meal-Planner.git
+cd 3404-Meal-Planner
+sudo bash install.sh
+```
+
+The installer creates a virtual environment, installs dependencies, and sets
+up the systemd service, then prints the address to open
+(`http://<pi-ip>:5000` — from any device on your tailnet or home network).
+
 ### Keeping the data
 
 Everything lives in one SQLite file, `mealplanner.db`, next to `app.py`.
@@ -56,8 +73,8 @@ To start fresh, just delete it.
 
 - The web importer understands most sites but not all of them — if a site
   doesn't work, it will say so; add that recipe manually instead.
-- First, only signed-in members can edit — there's no login; the app assumes
-  it runs inside your home network. Don't port-forward it to the internet.
+- There's no login by design — the app assumes it runs inside your home
+  network. Don't port-forward it to the internet.
 
 ## Project layout
 
