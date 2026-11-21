@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#e0562c">
+<title>Family Meal Planner</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="topbar">
+  <h1>🍳 Family Meals</h1>
+  <nav>
+    <button class="tab active" data-tab="recipes">Recipes</button>
+    <button class="tab" data-tab="planner">Plan</button>
+    <button class="tab" data-tab="list">List <span id="listBadge" class="badge hidden">0</span></button>
+  </nav>
+</header>
+
+<main>
+  <section id="tab-recipes" class="tab-page">
+    <div class="toolbar">
+      <input id="recipeSearch" type="search" placeholder="Search recipes or ingredients…">
+      <button id="btnAddRecipe" class="primary">+ Add</button>
+      <button id="btnImportRecipe" class="primary">🌐 Import URL</button>
+    </div>
+    <div id="recipeGrid" class="recipe-grid"></div>
+    <div id="recipeEmpty" class="empty hidden">No recipes yet. Import one from a webpage, or tap <b>+ Add</b> to write your own.</div>
+  </section>
+
+  <section id="tab-planner" class="tab-page hidden">
+    <div class="toolbar">
+      <button id="weekPrev">←</button>
+      <h2 id="weekLabel"></h2>
+      <button id="weekNext">→</button>
+      <button id="weekToday" class="ghost">This week</button>
+    </div>
+    <div id="planDays" class="plan-days"></div>
+    <button id="btnBuildList" class="primary block">🛒 Build shopping list from plan</button>
+  </section>
+
+  <section id="tab-list" class="tab-page hidden">
+    <div class="toolbar">
+      <input id="quickAdd" type="text" placeholder="Add an item (e.g. 2 lb potatoes)…">
+      <button id="btnQuickAdd" class="primary">Add</button>
+    </div>
+    <div class="toolbar subtle">
+      <button id="btnHideChecked" class="ghost">Hide checked</button>
+      <button id="btnClearChecked" class="ghost">Remove checked</button>
+      <button id="btnClearAll" class="ghost danger">Clear all</button>
+    </div>
+    <div id="shoppingList"></div>
+    <div id="listEmpty" class="empty hidden">List is empty. Plan meals and tap <b>Build shopping list</b>, or add items above.</div>
+  </section>
+</main>
+
+<dialog id="dlgRecipe" class="sheet">
+  <form id="formRecipe" method="dialog">
+    <h2 id="dlgRecipeTitle">Add recipe</h2>
+    <label>Title <input name="title" required></label>
+    <div class="row3">
+      <label>Servings <input name="servings" type="number" min="1" value="4"></label>
+      <label>Prep <input name="prep_time" placeholder="15m"></label>
+      <label>Cook <input name="cook_time" placeholder="30m"></label>
+    </div>
+    <label>Ingredients <span class="hint">one per line, e.g. <i>2 cups cooked rice</i></span>
+      <textarea name="ingredients" rows="7" required placeholder="2 tbsp olive oil&#10;1 onion, diced&#10;400 g canned tomatoes"></textarea>
+    </label>
+    <label>Instructions
+      <textarea name="instructions" rows="8" placeholder="Step by step…"></textarea>
+    </label>
+    <label>Tags <span class="hint">comma separated, e.g. quick, vegetarian</span>
+      <input name="tags" placeholder="quick, vegetarian">
+    </label>
+    <label>Source URL <input name="source_url" type="url" placeholder="optional"></label>
+    <div class="dialog-actions">
+      <button type="button" class="ghost" id="btnCancelRecipe">Cancel</button>
+      <button type="submit" class="primary" id="btnSaveRecipe">Save recipe</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlgView" class="sheet">
+  <div id="viewBody"></div>
+  <div class="dialog-actions">
+    <button type="button" class="ghost danger" id="btnDeleteRecipe">Delete</button>
+    <button type="button" class="ghost" id="btnPlanRecipe">📅 Add to plan</button>
+    <button type="button" class="primary" onclick="dlgView.close()">Done</button>
+  </div>
+</dialog>
+
+<dialog id="dlgPlanDays" class="sheet small">
+  <h2>Add to which day?</h2>
+  <div id="planDayChoices"></div>
+  <label class="servings-choose">Servings <input id="planServings" type="number" min="1" value="4"></label>
+  <div class="dialog-actions">
+    <button type="button" class="ghost" onclick="dlgPlanDays.close()">Cancel</button>
+  </div>
+</dialog>
+
+<dialog id="dlgImport" class="sheet small">
+  <h2>Import recipe from a webpage</h2>
+  <p class="hint">Paste a link from a recipe site. Most major sites work; some don't publish importable data, in which case you can add it manually.</p>
+  <label>URL <input id="importUrl" type="url" placeholder="https://…" required></label>
+  <div class="dialog-actions">
+    <button type="button" class="ghost" onclick="dlgImport.close()">Cancel</button>
+    <button type="button" class="primary" id="btnDoImport">Import</button>
+  </div>
+</dialog>
+
+<div id="toast" class="toast hidden"></div>
+<script src="/static/app.js"></script>
+</body>
+</html>
