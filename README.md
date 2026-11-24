@@ -19,11 +19,13 @@ no subscription, no company that can shut it down.
   (produce, meat, dairy…). Add any other grocery items yourself, check things
   off as you shop, or clear the list and start over.
 - **Recipe ideas** — a built-in set of simple, family-tested suggestions with
-  filters for gluten-free, no beef, and "easy on nightshades & potatoes" (and
-  never Brussels sprouts!). Filter by the equipment you own — oven, stovetop,
-  Instant Pot, sous vide. Recipes that need a small tweak come with a swap
-  note (e.g. "use tamari instead of soy sauce"), and any idea can be saved
-  into your recipe library with one tap to plan it for the week.
+  filters for gluten-free, no beef, "easy on nightshades & potatoes" (and
+  never Brussels sprouts!), plus a **complete meals with veggies** preference.
+  Filter by the equipment you own — oven, stovetop, Instant Pot, sous vide.
+  The lineup refreshes itself every week, and *New ideas* shuffles up a new
+  batch any time. Recipes that need a tweak come with a swap note (e.g. "use
+  tamari instead of soy sauce"), anything you're not interested in can be
+  hidden with one tap, and *Hidden ideas* brings it back later.
 
 ## Running it
 
