@@ -211,6 +211,8 @@ let ideasAll = [];
 let ideasWeb = [];
 let ideasNotice = "";
 let hiddenCount = 0;
+let ideasMode = "week";   // "week" = preset + web section; "web" = full web refresh
+let webSeen = [];
 
 ["fGf", "fNoBeef", "fNs", "fComplete"].forEach((id) => {
   $(id).addEventListener("change", loadIdeas);
@@ -272,15 +274,29 @@ async function loadIdeas() {
   if ($("fNs").checked) params.set("low_nightshade", "1");
   if ($("fComplete").checked) params.set("complete", "1");
   params.set("equipment", ideaEquipment);
-  ideasAll = await api(`/api/suggestions?${params}`);
+  ideasAll = [];
   ideasWeb = [];
   ideasNotice = "";
-  try {
-    const web = await api(`/api/suggestions/web?${params}`);
-    ideasWeb = web.items;
-    ideasNotice = web.notice;
-  } catch (e) {
-    ideasNotice = "Couldn't reach the recipe web right now.";
+  if (ideasMode === "web") {
+    params.set("attempts", "24");
+    if (webSeen.length) params.set("exclude", webSeen.slice(-60).join("|"));
+    try {
+      const web = await api(`/api/suggestions/web?${params}`);
+      ideasWeb = web.items;
+      ideasNotice = web.notice;
+      for (const s of ideasWeb) webSeen.push(s.title);
+    } catch (e) {
+      ideasNotice = "Couldn't reach the recipe web right now.";
+    }
+  } else {
+    ideasAll = await api(`/api/suggestions?${params}`);
+    try {
+      const web = await api(`/api/suggestions/web?${params}`);
+      ideasWeb = web.items;
+      ideasNotice = web.notice;
+    } catch (e) {
+      ideasNotice = "Couldn't reach the recipe web right now.";
+    }
   }
   const hidden = await api("/api/suggestions/hidden");
   hiddenCount = hidden.length;
@@ -289,11 +305,20 @@ async function loadIdeas() {
 }
 
 function renderIdeasBatch() {
+  const grid = $("ideaGrid");
+  grid.innerHTML = "";
+  if (ideasMode === "web") {
+    renderWeb(true);
+    $("ideaCount").textContent = ideasWeb.length
+      ? `${ideasWeb.length} fresh web finds`
+      : "";
+    $("ideaEmpty").classList.toggle("hidden", ideasWeb.length > 0);
+    return;
+  }
   const seed = seedFromString(`${ideasWeekKey()}:${ideaShuffleCount()}`);
   const batch = seededShuffle(ideasAll, seed).slice(0, IDEA_BATCH);
-  $("ideaGrid").innerHTML = "";
   renderIdeas(batch);
-  renderWeb();
+  renderWeb(false);
   $("ideaCount").textContent = ideasAll.length
     ? `Showing ${batch.length} of ${ideasAll.length} ideas`
     : "";
@@ -340,10 +365,10 @@ function renderIdeas(ideas) {
   for (const s of ideas) grid.appendChild(buildIdeaCard(s, false));
 }
 
-function renderWeb() {
+function renderWeb(fullMode) {
   const grid = $("ideaGrid");
   const head = document.createElement("div");
-  if (ideasNotice || !ideasWeb.length) {
+  if (!fullMode && (ideasNotice || !ideasWeb.length)) {
     head.innerHTML = `<div class="w3-head">\ud83c\udf10 From the web</div><p class="hint"></p>`;
     head.querySelector(".hint").textContent =
       ideasNotice || "No new web recipes passed the filters \u2014 try again shortly.";
@@ -351,16 +376,33 @@ function renderWeb() {
     return;
   }
   head.innerHTML = `<div class="w3-head">\ud83c\udf10 Fresh from the web \u00b7 TheMealDB</div>
-    <p class="hint">Pulled from the internet and auto-checked against your filters \u2014 always double-check labels for gluten.</p>`;
+    <p class="hint">Pulled live from the internet and auto-checked against your filters \u2014 always double-check labels for gluten.</p>`;
   grid.appendChild(head);
   for (const s of ideasWeb) grid.appendChild(buildIdeaCard(s, true));
 }
 
 $("btnNewIdeas").addEventListener("click", () => {
+  if (ideasMode === "week") {
+    ideasMode = "web";
+    updateIdeaButtons();
+    loadIdeas();
+    return;
+  }
   const n = ideaShuffleCount() + 1;
   localStorage.setItem("ideasShuffles", String(n));
-  renderIdeasBatch();
+  loadIdeas();
 });
+
+$("btnWeekPicks").addEventListener("click", () => {
+  ideasMode = "week";
+  updateIdeaButtons();
+  loadIdeas();
+});
+
+function updateIdeaButtons() {
+  $("btnWeekPicks").classList.toggle("hidden", ideasMode !== "web");
+  $("btnNewIdeas").textContent = ideasMode === "week" ? "\ud83d\udd04 Full web refresh" : "\ud83d\udd01 More from the web";
+}
 
 function viewSuggestion(s) {
   state.currentSuggestion = s;

@@ -29,7 +29,9 @@ no subscription, no company that can shut it down.
 - **Fresh from the web** — below the presets, each Ideas load also pulls a
   handful of real internet recipes from TheMealDB (no key or account needed)
   and auto-checks them against your filters. Save any of them straight into
-  your library with the original link kept.
+  your library with the original link kept. **Full web refresh** swaps the
+  Ideas grid to a whole batch of fresh web finds (excluding everything
+  already shown this session); *This week's picks* brings back your staples.
 - **Drag & drop shopping list** — touch & hold (or click-hold) any list item
   and drag it into another aisle section, e.g. your shorthand "violife shreds"
   from Other into Dairy & Eggs. Sections you move things into stick, even

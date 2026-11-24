@@ -391,12 +391,15 @@ def web_suggestions():
     db = get_db()
     hidden_titles = {r["title"] for r in db.execute("SELECT title FROM hidden_suggestions")}
     saved_titles = {r["title"] for r in db.execute("SELECT title FROM recipes")}
+    exclude_titles = [t.strip() for t in request.args.get("exclude", "").split("|") if t.strip()]
     try:
+        attempts = max(4, min(int(request.args.get("attempts") or 12), 32))
         items = build_web_suggestions(
             gf, no_beef, low_nightshade, complete,
-            attempts=12,
+            attempts=attempts,
             hidden_titles=hidden_titles,
             saved_titles=saved_titles,
+            exclude_titles=exclude_titles,
         )
         return jsonify({"items": items, "notice": ""})
     except Exception:

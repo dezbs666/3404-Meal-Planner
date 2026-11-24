@@ -25,7 +25,7 @@ GLUTEN_HARD = (
 )
 
 NIGHTSHADE_PATTERNS = (
-    r"tomato", r"tomatillo", r"salsa", r"ketchup", r"\bchil[ei]\b",
+    r"tomato", r"tomatillo", r"salsa", r"ketchup", r"\bchill?is?\b",
     r"jalape", r"chipotle", r"habanero", r"sriracha", r"tabasco", r"harissa",
     r"gochujang", r"enchilada", r"paprika", r"cayenne", r"red pepper",
     r"crushed pepper", r"pepper flakes", r"\bbell pepper", r"\bpeppers?\b",
@@ -160,6 +160,8 @@ def _meal_to_suggestion(meal):
     info = _classify(lines)
     if info.get("brussels"):
         return None
+    if (meal.get("strCategory") or "").strip().lower() == "beef":
+        info["beef"] = True
     area = (meal.get("strArea") or "").strip()
     category = (meal.get("strCategory") or "").strip()
     tags = [t for t in (area, category) if t]
@@ -184,7 +186,8 @@ def _meal_to_suggestion(meal):
 
 
 def build_web_suggestions(gf, no_beef, low_nightshade, complete,
-                          attempts=8, hidden_titles=(), saved_titles=()):
+                          attempts=8, hidden_titles=(), saved_titles=(),
+                          exclude_titles=()):
     try:
         with ThreadPoolExecutor(max_workers=attempts) as pool:
             futures = [pool.submit(_fetch_random) for _ in range(attempts)]
@@ -194,6 +197,7 @@ def build_web_suggestions(gf, no_beef, low_nightshade, complete,
 
     hidden = {t.lower() for t in hidden_titles}
     saved = {t.lower() for t in saved_titles}
+    excluded = {t.strip().lower() for t in exclude_titles if t.strip()}
 
     results = []
     seen = set()
@@ -202,7 +206,7 @@ def build_web_suggestions(gf, no_beef, low_nightshade, complete,
             continue
         title = (meal.get("strMeal") or "").strip()
         key = title.lower()
-        if not title or key in seen or key in hidden or key in saved:
+        if not title or key in seen or key in hidden or key in saved or key in excluded:
             continue
         seen.add(key)
         s = _meal_to_suggestion(meal)
