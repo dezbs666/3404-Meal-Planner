@@ -18,6 +18,12 @@ no subscription, no company that can shut it down.
   (`1½ cups` + `2 cups` → `3½ cups`). Items are grouped by store section
   (produce, meat, dairy…). Add any other grocery items yourself, check things
   off as you shop, or clear the list and start over.
+- **Recipe ideas** — a built-in set of simple, family-tested suggestions with
+  filters for gluten-free, no beef, and "easy on nightshades & potatoes" (and
+  never Brussels sprouts!). Filter by the equipment you own — oven, stovetop,
+  Instant Pot, sous vide. Recipes that need a small tweak come with a swap
+  note (e.g. "use tamari instead of soy sauce"), and any idea can be saved
+  into your recipe library with one tap to plan it for the week.
 
 ## Running it
 
@@ -81,6 +87,7 @@ To start fresh, just delete it.
 ```
 app.py            Flask server + REST API + SQLite
 recipe_import.py  schema.org JSON-LD / microdata recipe parsing
+suggestions.py    curated recipe ideas + dietary/equipment metadata
 quantities.py     quantity parsing, unit normalization, aisle categories
 templates/        single-page UI
 static/           styles + frontend JS
