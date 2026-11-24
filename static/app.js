@@ -1,4 +1,4 @@
-/* global dlgRecipe, dlgView, dlgPlanDays, dlgImport, dlgSuggest */
+/* global dlgRecipe, dlgView, dlgPlanDays, dlgImport, dlgSuggest, dlgHidden */
 
 const $ = (id) => document.getElementById(id);
 const state = {
@@ -205,9 +205,12 @@ const EQUIPMENT_NAMES = {
   "instant pot": "Instant Pot",
   "sous vide": "Sous vide",
 };
+const IDEA_BATCH = 9;
 let ideaEquipment = "";
+let ideasAll = [];
+let hiddenCount = 0;
 
-["fGf", "fNoBeef", "fNs"].forEach((id) => {
+["fGf", "fNoBeef", "fNs", "fComplete"].forEach((id) => {
   $(id).addEventListener("change", loadIdeas);
 });
 $("equipChips").querySelectorAll(".chip").forEach((chip) => {
@@ -218,37 +221,111 @@ $("equipChips").querySelectorAll(".chip").forEach((chip) => {
   });
 });
 
+function seedFromString(s) {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function seededShuffle(list, seed) {
+  const arr = list.slice();
+  let a = seed;
+  const rnd = () => {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function ideasWeekKey() {
+  const d = new Date();
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 10);
+}
+
+function ideaShuffleCount() {
+  const wk = ideasWeekKey();
+  if (localStorage.getItem("ideasWeek") !== wk) {
+    localStorage.setItem("ideasWeek", wk);
+    localStorage.setItem("ideasShuffles", "0");
+    return 0;
+  }
+  return parseInt(localStorage.getItem("ideasShuffles") || "0", 10);
+}
+
 async function loadIdeas() {
   const params = new URLSearchParams();
   if ($("fGf").checked) params.set("gf", "1");
   if ($("fNoBeef").checked) params.set("no_beef", "1");
   if ($("fNs").checked) params.set("low_nightshade", "1");
+  if ($("fComplete").checked) params.set("complete", "1");
   params.set("equipment", ideaEquipment);
-  const ideas = await api(`/api/suggestions?${params}`);
-  renderIdeas(ideas);
+  ideasAll = await api(`/api/suggestions?${params}`);
+  const hidden = await api("/api/suggestions/hidden");
+  hiddenCount = hidden.length;
+  $("btnHiddenIdeas").textContent = `Hidden ideas (${hiddenCount})`;
+  renderIdeasBatch();
+}
+
+function renderIdeasBatch() {
+  const seed = seedFromString(`${ideasWeekKey()}:${ideaShuffleCount()}`);
+  const batch = seededShuffle(ideasAll, seed).slice(0, IDEA_BATCH);
+  renderIdeas(batch);
+  $("ideaCount").textContent = ideasAll.length
+    ? `Showing ${batch.length} of ${ideasAll.length} ideas`
+    : "";
 }
 
 function renderIdeas(ideas) {
   const grid = $("ideaGrid");
   grid.innerHTML = "";
-  $("ideaEmpty").classList.toggle("hidden", ideas.length > 0);
+  $("ideaEmpty").classList.toggle("hidden", ideasAll.length > 0);
   for (const s of ideas) {
     const card = document.createElement("div");
     card.className = "recipe-card" + (s.perfect ? "" : " adaptable");
     card.innerHTML = `
       <div class="title"></div>
       <div class="meta"></div>
+      <div class="pills"></div>
       <div class="tags">${s.tags.map(() => `<span class="tagpill"></span>`).join("")}</div>
-      ${s.perfect ? "" : `<div class="swappill">needs a small tweak</div>`}
     `;
     card.querySelector(".title").textContent = s.title;
     card.querySelector(".meta").textContent =
       `Serves ${s.servings} · ${s.total_time} · ${s.equipment.join(", ")}`;
+    const pills = card.querySelector(".pills");
+    if (s.complete) {
+      const p = document.createElement("div");
+      p.className = "completepill";
+      p.textContent = "complete meal · includes veggies";
+      pills.appendChild(p);
+    }
+    if (!s.perfect) {
+      const p = document.createElement("div");
+      p.className = "swappill";
+      p.textContent = "needs a small tweak";
+      pills.appendChild(p);
+    }
     card.querySelectorAll(".tagpill").forEach((el, i) => { el.textContent = s.tags[i]; });
     card.addEventListener("click", () => viewSuggestion(s));
     grid.appendChild(card);
   }
 }
+
+$("btnNewIdeas").addEventListener("click", () => {
+  const n = ideaShuffleCount() + 1;
+  localStorage.setItem("ideasShuffles", String(n));
+  renderIdeasBatch();
+});
 
 function viewSuggestion(s) {
   state.currentSuggestion = s;
@@ -297,6 +374,43 @@ $("btnSaveSuggestion").addEventListener("click", async () => {
   } catch (err) {
     toast(err.message, true);
   }
+});
+
+$("btnHideSuggestion").addEventListener("click", async () => {
+  const s = state.currentSuggestion;
+  if (!s) return;
+  await api("/api/suggestions/hide", { method: "POST", body: { title: s.title } });
+  dlgSuggest.close();
+  toast(`Hidden “${s.title}” — find it under Hidden ideas if you change your mind`);
+  loadIdeas();
+});
+
+$("btnHiddenIdeas").addEventListener("click", async () => {
+  const titles = await api("/api/suggestions/hidden");
+  const wrap = $("hiddenList");
+  wrap.innerHTML = "";
+  if (!titles.length) {
+    const p = document.createElement("p");
+    p.className = "hint";
+    p.textContent = "Nothing hidden yet. Pick an idea, then tap \u201cNot interested\u201d to tuck it away.";
+    wrap.appendChild(p);
+  }
+  for (const title of titles) {
+    const row = document.createElement("div");
+    row.className = "hidden-row";
+    const name = document.createElement("span");
+    name.textContent = title;
+    const btn = document.createElement("button");
+    btn.className = "ghost";
+    btn.textContent = "Bring back";
+    btn.addEventListener("click", async () => {
+      await api("/api/suggestions/unhide", { method: "POST", body: { title } });
+      openHiddenIdeas();
+    });
+    row.append(name, btn);
+    wrap.appendChild(row);
+  }
+  $("dlgHidden").showModal();
 });
 
 /* ---------- planner ---------- */

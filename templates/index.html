@@ -34,6 +34,7 @@
       <label class="filter-check"><input type="checkbox" id="fGf"> Gluten-free</label>
       <label class="filter-check"><input type="checkbox" id="fNoBeef"> No beef</label>
       <label class="filter-check"><input type="checkbox" id="fNs" checked> Easy on nightshades &amp; potatoes</label>
+      <label class="filter-check"><input type="checkbox" id="fComplete" checked> Complete meals (with veggies)</label>
     </div>
     <div class="toolbar subtle" id="equipChips">
       <button class="chip active" data-eq="">All our equipment</button>
@@ -42,7 +43,14 @@
       <button class="chip" data-eq="instantpot">Instant Pot</button>
       <button class="chip" data-eq="sousvide">Sous vide</button>
     </div>
-    <p class="hint" style="margin:0 0 10px">Never includes Brussels sprouts. Recipes that need a small tweak come with a yellow swap note.</p>
+    <div class="toolbar subtle" style="justify-content:space-between">
+      <span id="ideaCount" class="hint"></span>
+      <span class="toolbar" style="gap:8px;margin:0">
+        <button id="btnNewIdeas" class="ghost">🔄 New ideas</button>
+        <button id="btnHiddenIdeas" class="ghost">Hidden ideas</button>
+      </span>
+    </div>
+    <p class="hint" style="margin:0 0 10px">Never includes Brussels sprouts. A fresh lineup every Monday — tap <b>New ideas</b> for a different batch. Recipes that need a small tweak come with a yellow swap note.</p>
     <div id="ideaGrid" class="recipe-grid"></div>
     <div id="ideaEmpty" class="empty hidden">No suggestions match right now — try un-ticking a filter.</div>
   </section>
@@ -121,8 +129,19 @@
 <dialog id="dlgSuggest" class="sheet">
   <div id="suggestBody"></div>
   <div class="dialog-actions">
+    <button type="button" class="ghost" id="btnHideSuggestion">🚫 Not interested</button>
+    <span style="flex:1"></span>
     <button type="button" class="ghost" onclick="dlgSuggest.close()">Close</button>
     <button type="button" class="primary" id="btnSaveSuggestion">Save to my recipes</button>
+  </div>
+</dialog>
+
+<dialog id="dlgHidden" class="sheet small">
+  <h2>Hidden ideas</h2>
+  <p class="hint">Ideas you marked “not interested.” Bring any back whenever you like.</p>
+  <div id="hiddenList"></div>
+  <div class="dialog-actions">
+    <button type="button" class="ghost" onclick="dlgHidden.close()">Close</button>
   </div>
 </dialog>
 

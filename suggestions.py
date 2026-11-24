@@ -14,6 +14,7 @@ No suggestion contains Brussels sprouts.
 SUGGESTIONS = [
     {
         "title": "Sheet-Pan Lemon Garlic Chicken Thighs",
+        "complete": True,
         "servings": 4,
         "total_time": "45m",
         "equipment": ["oven", "pot"],
@@ -41,6 +42,7 @@ SUGGESTIONS = [
     },
     {
         "title": "Cast-Iron Garlic Butter Steak Bites",
+        "complete": False,
         "servings": 4,
         "total_time": "20m",
         "equipment": ["skillet"],
@@ -56,7 +58,7 @@ SUGGESTIONS = [
             "Pat steak dry, season with salt and pepper.",
             "Heat cast-iron skillet over high heat until smoking. Sear steak 2–3 minutes without moving, then toss and cook 1–2 more minutes to medium-rare/medium.",
             "Lower heat, add butter and garlic, toss 30 seconds to coat.",
-            "Finish with parsley and serve over rice.",
+            "Finish with parsley and serve over rice with steamed broccoli or a simple salad to round it out.",
         ],
         "tags": ["beef", "fast", "date night"],
         "gf": True,
@@ -66,6 +68,7 @@ SUGGESTIONS = [
     },
     {
         "title": "Instant Pot Chicken & Wild Rice Soup",
+        "complete": True,
         "servings": 6,
         "total_time": "50m",
         "equipment": ["instant pot"],
@@ -79,6 +82,7 @@ SUGGESTIONS = [
             "2 tsp dried thyme",
             "1 bay leaf",
             "1 cup heavy cream",
+            "3 cups baby spinach",
             "2 tbsp butter",
             "1 tsp salt",
         ],
@@ -93,6 +97,7 @@ SUGGESTIONS = [
     },
     {
         "title": "Creamy Spinach-Artichoke Skillet Chicken",
+        "complete": True,
         "servings": 4,
         "total_time": "30m",
         "equipment": ["skillet"],
@@ -120,6 +125,7 @@ SUGGESTIONS = [
     },
     {
         "title": "Honey Mustard Baked Salmon",
+        "complete": True,
         "servings": 4,
         "total_time": "25m",
         "equipment": ["oven"],
@@ -130,11 +136,13 @@ SUGGESTIONS = [
             "1 tbsp olive oil",
             "1 tsp garlic powder",
             "1/2 tsp salt",
+            "1 lb broccoli, cut in florets",
         ],
         "instructions": [
-            "Heat oven to 400°F. Whisk mustard, honey, oil, garlic powder, and salt.",
+            "Heat oven to 400°F.",
             "Place salmon on a lined sheet pan, brush with the mixture.",
-            "Bake 12–14 minutes until it flakes easily. Serve with rice and steamed broccoli.",
+            "Bake 12–14 minutes until it flakes easily.",
+            "Steam the broccoli while it bakes; serve with rice.",
         ],
         "tags": ["fish", "quick", "sheet pan"],
         "gf": True,
@@ -143,6 +151,7 @@ SUGGESTIONS = [
     },
     {
         "title": "Sous Vide Pork Chops with Apples",
+        "complete": False,
         "servings": 4,
         "total_time": "2h (mostly unattended)",
         "equipment": ["sous vide", "skillet"],
@@ -158,6 +167,7 @@ SUGGESTIONS = [
             "Season chops; vacuum-seal or use zip bag with water displacement. Sous vide 140°F for 1 1/2 hours.",
             "Melt butter in a cast-iron skillet over medium-high; sear chops 1 minute per side; remove.",
             "Cook apples in the same pan 3–4 minutes until softened, scrape up browned bits, spoon over chops.",
+            "Round it out with roasted green beans or a simple salad.",
         ],
         "tags": ["pork", "sous vide", "fall"],
         "gf": True,
@@ -166,6 +176,7 @@ SUGGESTIONS = [
     },
     {
         "title": "Lime Chicken & White Bean Chili",
+        "complete": True,
         "servings": 6,
         "total_time": "45m",
         "equipment": ["pot"],
@@ -181,10 +192,12 @@ SUGGESTIONS = [
             "2 tbsp olive oil",
             "1 tsp salt",
             "Sour cream and avocado to top",
+            "3 big handfuls baby spinach",
         ],
         "instructions": [
             "Brown chicken in oil in a pot; add onion and garlic, cook 3 minutes.",
             "Add broth, beans, cumin, oregano, salt; simmer 25 minutes until slightly thickened.",
+            "Wilt in a few big handfuls of baby spinach at the end.",
             "Finish with lime juice. Top with sour cream, avocado, and lime wedges.",
         ],
         "tags": ["chicken", "chili", "one pot", "green"],
@@ -194,6 +207,7 @@ SUGGESTIONS = [
     },
     {
         "title": "One-Pot Lemon Herb Chicken & Rice",
+        "complete": True,
         "servings": 4,
         "total_time": "40m",
         "equipment": ["pot", "skillet"],
@@ -206,11 +220,12 @@ SUGGESTIONS = [
             "2 tbsp olive oil",
             "1 lemon (zest + juice)",
             "1 tsp dried oregano",
+            "1 cup frozen peas",
             "1 tsp salt",
         ],
         "instructions": [
             "Brown chicken in oil in a pot; remove. Sauté onion and garlic 3 minutes.",
-            "Add rice, broth, oregano, salt; stir, return chicken, cover and simmer 18 minutes on low.",
+            "Add rice, broth, oregano, salt, and peas; stir, return chicken, cover and simmer 18 minutes on low.",
             "Off heat, stir in lemon zest and juice; rest 5 minutes, fluff, and serve.",
         ],
         "tags": ["chicken", "rice", "one pot", "budget"],
@@ -220,6 +235,7 @@ SUGGESTIONS = [
     },
     {
         "title": "Shrimp Scampi (GF Pasta or Zucchini Noodles)",
+        "complete": True,
         "servings": 4,
         "total_time": "25m",
         "equipment": ["skillet", "pot"],
@@ -231,10 +247,11 @@ SUGGESTIONS = [
             "Juice of 1 lemon",
             "1/2 tsp red pepper flakes (optional)",
             "12 oz gluten-free spaghetti (or 3 zucchini, spiralized)",
+            "1 lb broccoli, cut in florets (skip if using zucchini noodles)",
             "2 tbsp parsley",
         ],
         "instructions": [
-            "Cook pasta in salted water; reserve 1/2 cup pasta water.",
+            "Cook pasta in salted water; reserve 1/2 cup pasta water. Steam the broccoli (if using) alongside.",
             "Melt butter in a skillet, cook garlic 30 seconds, add shrimp 2 minutes per side; remove.",
             "Add wine/broth and lemon juice, simmer 2 minutes; return shrimp, toss with pasta and parsley, loosen with pasta water.",
         ],
@@ -245,6 +262,7 @@ SUGGESTIONS = [
     },
     {
         "title": "Instant Pot Pulled Pork",
+        "complete": True,
         "servings": 8,
         "total_time": "1h 30m",
         "equipment": ["instant pot"],
@@ -257,8 +275,10 @@ SUGGESTIONS = [
             "2 tbsp Dijon mustard (check label for GF)",
             "1 tbsp smoked paprika (nightshades — see note)",
             "1 tsp salt",
+            "12 oz coleslaw mix",
         ],
         "instructions": [
+            "Toss coleslaw mix with a splash of vinegar, salt, and a spoonful of the sauce for a quick slaw.",
             "Rub pork with paprika and salt. Sear chunks in the Instant Pot on sauté (or skip), add onion, vinegar, and 1 cup water.",
             "Pressure cook high 75 minutes; natural release 15.",
             "Meanwhile simmer ketchup, honey, and Dijon 3 minutes for a quick sauce.",
@@ -273,6 +293,7 @@ SUGGESTIONS = [
     },
     {
         "title": "Egg Roll in a Bowl",
+        "complete": True,
         "servings": 4,
         "total_time": "20m",
         "equipment": ["skillet"],
@@ -298,6 +319,7 @@ SUGGESTIONS = [
     },
     {
         "title": "Ground Turkey & Cabbage Skillet",
+        "complete": True,
         "servings": 4,
         "total_time": "30m",
         "equipment": ["skillet"],
@@ -324,6 +346,7 @@ SUGGESTIONS = [
     },
     {
         "title": "Sous Vide Chicken Breast with Pan Sauce",
+        "complete": True,
         "servings": 4,
         "total_time": "2h (mostly unattended)",
         "equipment": ["sous vide", "skillet"],
@@ -335,9 +358,10 @@ SUGGESTIONS = [
             "2 tbsp Dijon mustard",
             "1 tsp fresh thyme",
             "1 tsp salt",
+            "1 lb green beans, trimmed",
         ],
         "instructions": [
-            "Season chicken; sous vide 145°F for 1 1/2 hours.",
+            "Season chicken; sous vide 145°F for 1 1/2 hours. Steam the green beans near the end.",
             "Sauté shallot in butter 1 minute, add broth, Dijon, and thyme; simmer 2 minutes.",
             "Sear chicken 1 minute per side, spoon sauce over.",
         ],
@@ -348,6 +372,7 @@ SUGGESTIONS = [
     },
     {
         "title": "Instant Pot Butter Chicken (Mild)",
+        "complete": True,
         "servings": 6,
         "total_time": "50m",
         "equipment": ["instant pot"],
@@ -362,11 +387,12 @@ SUGGESTIONS = [
             "1 tsp salt",
             "1 can (15 oz) tomato sauce (nightshades — see note)",
             "1 cup heavy cream",
+            "3 cups baby spinach",
         ],
         "instructions": [
             "Sauté onion, garlic, ginger, and spices in butter in the Instant Pot, 3 minutes.",
             "Add chicken, tomato sauce, and salt. Pressure cook high 8 minutes; quick release.",
-            "Stir in cream, simmer on sauté 3 minutes to thicken. Serve over rice.",
+            "Stir in cream and spinach, simmer on sauté 3 minutes to wilt. Serve over rice.",
         ],
         "tags": ["chicken", "curry", "microwave-friendly leftovers"],
         "gf": True,
@@ -376,6 +402,7 @@ SUGGESTIONS = [
     },
     {
         "title": "Roast Pork Tenderloin with Green Beans",
+        "complete": True,
         "servings": 4,
         "total_time": "35m",
         "equipment": ["oven", "pot"],
@@ -401,6 +428,7 @@ SUGGESTIONS = [
     },
     {
         "title": "Fish Tacos with Lime Cabbage Slaw",
+        "complete": True,
         "servings": 4,
         "total_time": "25m",
         "equipment": ["skillet"],
@@ -428,6 +456,7 @@ SUGGESTIONS = [
     },
     {
         "title": "Instant Pot Herb Chicken & Potatoes",
+        "complete": True,
         "servings": 6,
         "total_time": "40m",
         "equipment": ["instant pot"],
@@ -453,6 +482,7 @@ SUGGESTIONS = [
     },
     {
         "title": "Creamy Mushroom Pork Chops",
+        "complete": True,
         "servings": 4,
         "total_time": "30m",
         "equipment": ["skillet"],
@@ -466,10 +496,12 @@ SUGGESTIONS = [
             "2 tbsp olive oil",
             "2 cloves garlic, minced",
             "1 tsp thyme",
+            "1 lb green beans, steamed",
             "1 tsp salt",
         ],
         "instructions": [
             "Sear seasoned chops in oil in a cast-iron skillet 4 minutes per side; remove.",
+            "Steam the green beans alongside.",
             "Cook mushrooms and onion until browned, about 6 minutes; add garlic and thyme for 1 minute.",
             "Add broth and cream, whisk in cornstarch, simmer 2 minutes; return chops for 2 minutes to coat.",
         ],
@@ -480,6 +512,7 @@ SUGGESTIONS = [
     },
     {
         "title": "Coconut-Lime Chicken Thighs",
+        "complete": True,
         "servings": 4,
         "total_time": "30m",
         "equipment": ["skillet", "pot"],
@@ -492,11 +525,12 @@ SUGGESTIONS = [
             "1 tbsp fresh ginger, grated",
             "2 tbsp brown sugar",
             "1 tsp salt",
+            "3 cups baby spinach",
         ],
         "instructions": [
             "Whisk coconut milk, lime juice, fish sauce, garlic, ginger, sugar, and salt; add chicken and marinate 15+ minutes.",
             "Sear chicken in a hot skillet 5–6 minutes per side.",
-            "Simmer the marinade 5 minutes until slightly thickened and spoon over chicken with rice.",
+            "Simmer the marinade 5 minutes until slightly thickened, wilt in the spinach, and spoon over chicken with rice.",
         ],
         "tags": ["chicken", "coconut", "weeknight"],
         "gf": "Check the fish sauce label — Red Boat and Squid brands are gluten-free.",
@@ -505,6 +539,7 @@ SUGGESTIONS = [
     },
     {
         "title": "Instant Pot Chicken Noodle Soup (GF Noodles or Rice)",
+        "complete": True,
         "servings": 6,
         "total_time": "45m",
         "equipment": ["instant pot"],
@@ -531,6 +566,7 @@ SUGGESTIONS = [
     },
     {
         "title": "Cast-Iron Chicken Thighs with Wilted Cabbage Slaw",
+        "complete": True,
         "servings": 4,
         "total_time": "30m",
         "equipment": ["skillet"],
@@ -555,6 +591,7 @@ SUGGESTIONS = [
     },
     {
         "title": "Baked Frittata with Spinach & Feta",
+        "complete": True,
         "servings": 4,
         "total_time": "35m",
         "equipment": ["oven"],
@@ -581,6 +618,7 @@ SUGGESTIONS = [
     },
     {
         "title": "Spaghetti with Turkey Meat Sauce",
+        "complete": True,
         "servings": 4,
         "total_time": "40m",
         "equipment": ["pot", "skillet"],
@@ -594,11 +632,12 @@ SUGGESTIONS = [
             "1 tsp dried oregano",
             "1 tsp dried basil",
             "1 tsp salt",
+            "1 lb green beans, steamed (or a simple side salad)",
         ],
         "instructions": [
             "Brown turkey in oil in a skillet; remove.",
             "Cook onion and garlic 3 minutes, add tomatoes and herbs, simmer 20 minutes; return turkey.",
-            "Cook pasta in salted water, toss with the sauce.",
+            "Cook pasta in salted water, toss with the sauce, and serve with the green beans.",
         ],
         "tags": ["turkey", "pasta", "classic"],
         "gf": "Use gluten-free pasta (Barilla GF, Jovial, or Tinkyada) and check the crushed-tomato can is plain.",
@@ -608,6 +647,7 @@ SUGGESTIONS = [
     },
     {
         "title": "Instant Pot Goulash-Style Beef & Noodles",
+        "complete": False,
         "servings": 6,
         "total_time": "50m",
         "equipment": ["instant pot"],
@@ -625,7 +665,7 @@ SUGGESTIONS = [
         "instructions": [
             "Sauté onion in butter in the Instant Pot 3 minutes; add beef, paprika, caraway, broth, salt.",
             "Pressure cook high 35 minutes; natural release 10.",
-            "Cook noodles separately; stir sour cream into the beef; serve over noodles.",
+            "Cook noodles separately; stir sour cream into the beef; serve over noodles with a simple cucumber salad or green beans.",
         ],
         "tags": ["beef", "comfort", "winter"],
         "gf": "Use GF noodles (Jovial GF tagliatelle works well here).",

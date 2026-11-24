@@ -74,6 +74,10 @@ CREATE TABLE IF NOT EXISTS shopping_items (
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     UNIQUE(name, unit)
 );
+
+CREATE TABLE IF NOT EXISTS hidden_suggestions (
+    title TEXT PRIMARY KEY
+);
 """
 
 with sqlite3.connect(DB_PATH) as _init:
@@ -297,15 +301,21 @@ def list_suggestions():
     gf = request.args.get("gf") == "1"
     no_beef = request.args.get("no_beef") == "1"
     low_nightshade = request.args.get("low_nightshade") == "1"
+    complete = request.args.get("complete") == "1"
     equipment = request.args.get("equipment", "")
+    hidden = {r["title"] for r in get_db().execute("SELECT title FROM hidden_suggestions")}
     results = []
     for s in SUGGESTIONS:
         has_beef = bool(s.get("beef"))
+        if s["title"] in hidden:
+            continue
         if gf and s.get("gf") is False:
             continue
         if no_beef and has_beef and not s.get("beef_swap"):
             continue
         if low_nightshade and s.get("nightshade") == "heavy":
+            continue
+        if complete and not s.get("complete"):
             continue
         eq = set(s.get("equipment", []))
         if equipment == "oven" and "oven" not in eq:
@@ -326,8 +336,40 @@ def list_suggestions():
         out = dict(s)
         out["perfect"] = perfect
         results.append(out)
-    results.sort(key=lambda r: not r["perfect"])
+    results.sort(key=lambda r: (not r["perfect"], not r.get("complete")))
     return jsonify(results)
+
+
+@app.post("/api/suggestions/hide")
+def hide_suggestion():
+    data = request.get_json(force=True)
+    title = str(data.get("title", "")).strip()
+    if not title:
+        return jsonify({"error": "Title is required."}), 400
+    db = get_db()
+    db.execute("INSERT OR IGNORE INTO hidden_suggestions (title) VALUES (?)", (title,))
+    db.commit()
+    return jsonify({"ok": True})
+
+
+@app.post("/api/suggestions/unhide")
+def unhide_suggestion():
+    data = request.get_json(force=True)
+    title = str(data.get("title", "")).strip()
+    if not title:
+        return jsonify({"error": "Title is required."}), 400
+    db = get_db()
+    db.execute("DELETE FROM hidden_suggestions WHERE title = ?", (title,))
+    db.commit()
+    return jsonify({"ok": True})
+
+
+@app.get("/api/suggestions/hidden")
+def hidden_suggestions():
+    rows = get_db().execute(
+        "SELECT title FROM hidden_suggestions ORDER BY title COLLATE NOCASE"
+    ).fetchall()
+    return jsonify([r["title"] for r in rows])
 
 
 @app.get("/api/plan")
