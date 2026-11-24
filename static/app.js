@@ -208,7 +208,11 @@ const EQUIPMENT_NAMES = {
 const IDEA_BATCH = 9;
 let ideaEquipment = "";
 let ideasAll = [];
+let ideasWeb = [];
+let ideasNotice = "";
 let hiddenCount = 0;
+let ideasMode = "week";   // "week" = preset + web section; "web" = full web refresh
+let webSeen = [];
 
 ["fGf", "fNoBeef", "fNs", "fComplete"].forEach((id) => {
   $(id).addEventListener("change", loadIdeas);
@@ -270,7 +274,30 @@ async function loadIdeas() {
   if ($("fNs").checked) params.set("low_nightshade", "1");
   if ($("fComplete").checked) params.set("complete", "1");
   params.set("equipment", ideaEquipment);
-  ideasAll = await api(`/api/suggestions?${params}`);
+  ideasAll = [];
+  ideasWeb = [];
+  ideasNotice = "";
+  if (ideasMode === "web") {
+    params.set("attempts", "24");
+    if (webSeen.length) params.set("exclude", webSeen.slice(-60).join("|"));
+    try {
+      const web = await api(`/api/suggestions/web?${params}`);
+      ideasWeb = web.items;
+      ideasNotice = web.notice;
+      for (const s of ideasWeb) webSeen.push(s.title);
+    } catch (e) {
+      ideasNotice = "Couldn't reach the recipe web right now.";
+    }
+  } else {
+    ideasAll = await api(`/api/suggestions?${params}`);
+    try {
+      const web = await api(`/api/suggestions/web?${params}`);
+      ideasWeb = web.items;
+      ideasNotice = web.notice;
+    } catch (e) {
+      ideasNotice = "Couldn't reach the recipe web right now.";
+    }
+  }
   const hidden = await api("/api/suggestions/hidden");
   hiddenCount = hidden.length;
   $("btnHiddenIdeas").textContent = `Hidden ideas (${hiddenCount})`;
@@ -278,54 +305,104 @@ async function loadIdeas() {
 }
 
 function renderIdeasBatch() {
+  const grid = $("ideaGrid");
+  grid.innerHTML = "";
+  if (ideasMode === "web") {
+    renderWeb(true);
+    $("ideaCount").textContent = ideasWeb.length
+      ? `${ideasWeb.length} fresh web finds`
+      : "";
+    $("ideaEmpty").classList.toggle("hidden", ideasWeb.length > 0);
+    return;
+  }
   const seed = seedFromString(`${ideasWeekKey()}:${ideaShuffleCount()}`);
   const batch = seededShuffle(ideasAll, seed).slice(0, IDEA_BATCH);
   renderIdeas(batch);
+  renderWeb(false);
   $("ideaCount").textContent = ideasAll.length
     ? `Showing ${batch.length} of ${ideasAll.length} ideas`
     : "";
 }
 
-function renderIdeas(ideas) {
-  const grid = $("ideaGrid");
-  grid.innerHTML = "";
-  $("ideaEmpty").classList.toggle("hidden", ideasAll.length > 0);
-  for (const s of ideas) {
-    const card = document.createElement("div");
-    card.className = "recipe-card" + (s.perfect ? "" : " adaptable");
-    card.innerHTML = `
-      <div class="title"></div>
-      <div class="meta"></div>
-      <div class="pills"></div>
-      <div class="tags">${s.tags.map(() => `<span class="tagpill"></span>`).join("")}</div>
-    `;
-    card.querySelector(".title").textContent = s.title;
-    card.querySelector(".meta").textContent =
-      `Serves ${s.servings} · ${s.total_time} · ${s.equipment.join(", ")}`;
-    const pills = card.querySelector(".pills");
+function buildIdeaCard(s, web) {
+  const card = document.createElement("div");
+  card.className = "recipe-card" + (s.perfect ? "" : " adaptable");
+  card.innerHTML = `
+    <div class="title"></div>
+    <div class="meta"></div>
+    <div class="pills"></div>
+    <div class="tags">${(s.tags || []).map(() => `<span class="tagpill"></span>`).join("")}</div>
+  `;
+  const label = [];
+  if (web) label.push("\ud83c\udf10");
+  label.push(`Serves ${s.servings}`);
+  if (s.total_time) label.push(s.total_time);
+  if (web) label.push("TheMealDB");
+  else label.push(s.equipment.join(", "));
+  card.querySelector(".title").textContent = s.title;
+  card.querySelector(".meta").textContent = label.filter(Boolean).join(" · ");
+  const pills = card.querySelector(".pills");
     if (s.complete) {
       const p = document.createElement("div");
       p.className = "completepill";
       p.textContent = "complete meal · includes veggies";
       pills.appendChild(p);
     }
-    if (!s.perfect) {
-      const p = document.createElement("div");
-      p.className = "swappill";
-      p.textContent = "needs a small tweak";
-      pills.appendChild(p);
-    }
-    card.querySelectorAll(".tagpill").forEach((el, i) => { el.textContent = s.tags[i]; });
-    card.addEventListener("click", () => viewSuggestion(s));
-    grid.appendChild(card);
+  if (!s.perfect) {
+    const p = document.createElement("div");
+    p.className = "swappill";
+    p.textContent = "needs a small tweak";
+    pills.appendChild(p);
   }
+  card.querySelectorAll(".tagpill").forEach((el, i) => { el.textContent = s.tags[i]; });
+  card.addEventListener("click", () => viewSuggestion(s));
+  return card;
+}
+
+function renderIdeas(ideas) {
+  $("ideaEmpty").classList.toggle("hidden", ideasAll.length > 0);
+  const grid = $("ideaGrid");
+  for (const s of ideas) grid.appendChild(buildIdeaCard(s, false));
+}
+
+function renderWeb(fullMode) {
+  const grid = $("ideaGrid");
+  const head = document.createElement("div");
+  if (!fullMode && (ideasNotice || !ideasWeb.length)) {
+    head.innerHTML = `<div class="w3-head">\ud83c\udf10 From the web</div><p class="hint"></p>`;
+    head.querySelector(".hint").textContent =
+      ideasNotice || "No new web recipes passed the filters \u2014 try again shortly.";
+    grid.appendChild(head);
+    return;
+  }
+  head.innerHTML = `<div class="w3-head">\ud83c\udf10 Fresh from the web \u00b7 TheMealDB</div>
+    <p class="hint">Pulled live from the internet and auto-checked against your filters \u2014 always double-check labels for gluten.</p>`;
+  grid.appendChild(head);
+  for (const s of ideasWeb) grid.appendChild(buildIdeaCard(s, true));
 }
 
 $("btnNewIdeas").addEventListener("click", () => {
+  if (ideasMode === "week") {
+    ideasMode = "web";
+    updateIdeaButtons();
+    loadIdeas();
+    return;
+  }
   const n = ideaShuffleCount() + 1;
   localStorage.setItem("ideasShuffles", String(n));
-  renderIdeasBatch();
+  loadIdeas();
 });
+
+$("btnWeekPicks").addEventListener("click", () => {
+  ideasMode = "week";
+  updateIdeaButtons();
+  loadIdeas();
+});
+
+function updateIdeaButtons() {
+  $("btnWeekPicks").classList.toggle("hidden", ideasMode !== "web");
+  $("btnNewIdeas").textContent = ideasMode === "week" ? "\ud83d\udd04 Full web refresh" : "\ud83d\udd01 More from the web";
+}
 
 function viewSuggestion(s) {
   state.currentSuggestion = s;
@@ -340,11 +417,15 @@ function viewSuggestion(s) {
   if (s.ns_note) notes.push(s.ns_note);
   if (notes.length) html += `<div class="v-notes swap-notes"><b>Good to know</b>${notes.map((n) => `<div>• ${esc(n)}</div>`).join("")}</div>`;
   else html += `<div class="v-notes ok-note">Fits all your filters as written ✓</div>`;
+  if (s.source_url) {
+    html = `<a class="v-link" href="${esc(s.source_url)}" target="_blank" rel="noopener">Original web page ↗</a>` + html;
+  }
   const body = $("suggestBody");
   body.innerHTML = html;
   body.querySelector(".v-title").textContent = s.title;
-  body.querySelector(".v-equip").textContent =
-    s.equipment.length ? s.equipment.map((e) => EQUIPMENT_NAMES[e] || e).join(" · ") : "just basics";
+  body.querySelector(".v-equip").textContent = s.equipment && s.equipment.length
+    ? s.equipment.map((e) => EQUIPMENT_NAMES[e] || e).join(" · ")
+    : "check the recipe site for equipment";
   $("dlgSuggest").showModal();
 }
 
@@ -364,8 +445,9 @@ $("btnSaveSuggestion").addEventListener("click", async () => {
         total_time: s.total_time,
         ingredients: s.ingredients,
         instructions: s.instructions.join("\n"),
-        tags: [...s.tags, "suggestion"].join(", "),
+        tags: [...(s.tags || []), "suggestion"].join(", "),
         notes: notes.join(" "),
+        source_url: s.source_url || "",
       },
     });
     dlgSuggest.close();
@@ -572,10 +654,12 @@ function renderList(grouped) {
     }
     const cat = document.createElement("div");
     cat.className = "cat";
+    cat.dataset.cat = category;
     cat.innerHTML = `<h3>${esc(category)}</h3>`;
     for (const item of items) {
       const row = document.createElement("div");
       row.className = "list-item" + (item.checked ? " checked" : "");
+      row.dataset.id = item.id;
       row.innerHTML = `
         <button class="check" title="Toggle">✓</button>
         <span class="label"><span class="name"></span></span>
@@ -597,6 +681,94 @@ function renderList(grouped) {
     wrap.appendChild(cat);
   }
 }
+
+/* touch & hold (or click) an item, drag it onto another section header */
+(() => {
+  const wrap = $("shoppingList");
+  let active = false, ghost = null, heldRow = null, hoverCat = null, timer = null;
+
+  function clearGhost() {
+    if (ghost) { ghost.remove(); ghost = null; }
+    if (heldRow) { heldRow.classList.remove("dragging"); heldRow = null; }
+    if (hoverCat) { hoverCat.classList.remove("drop-target"); hoverCat = null; }
+  }
+
+  function resolveCat(x, y) {
+    const el = document.elementFromPoint(x, y);
+    return (el && el.closest) ? el.closest(".cat") : null;
+  }
+
+  wrap.addEventListener("pointerdown", (e) => {
+    const row = e.target.closest(".list-item");
+    if (!row || e.target.closest(".check, .del")) return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    heldRow = row;
+    active = false;
+    const startX = e.clientX, startY = e.clientY;
+    const hold = e.pointerType === "mouse" ? 0 : 330;
+    if (hold === 0) activate(startX, startY);
+    else timer = setTimeout(() => activate(startX, startY), hold);
+
+    function activate(x, y) {
+      if (!heldRow || active) return;
+      timer = null;
+      active = true;
+      ghost = document.createElement("div");
+      ghost.className = "drag-ghost";
+      ghost.textContent = heldRow.querySelector(".name").textContent;
+      document.body.appendChild(ghost);
+      heldRow.classList.add("dragging");
+      ghost.style.left = x + "px";
+      ghost.style.top = y + "px";
+    }
+
+    const move = (ev) => {
+      if (!active) {
+        if (timer && Math.hypot(ev.clientX - startX, ev.clientY - startY) > 10) {
+          clearTimeout(timer);
+          timer = null;
+        }
+        return;
+      }
+      ev.preventDefault();
+      ghost.style.left = ev.clientX + "px";
+      ghost.style.top = ev.clientY + "px";
+      const cat = resolveCat(ev.clientX, ev.clientY);
+      if (hoverCat && hoverCat !== cat) hoverCat.classList.remove("drop-target");
+      hoverCat = cat;
+      if (cat) cat.classList.add("drop-target");
+    };
+    const onTouchMove = (ev) => { if (active) ev.preventDefault(); };
+    const finish = async () => {
+      if (timer) { clearTimeout(timer); timer = null; }
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", finish);
+      window.removeEventListener("pointercancel", finish);
+      document.removeEventListener("touchmove", onTouchMove);
+      if (!active) return;
+      const row = heldRow, target = hoverCat;
+      const itemId = row.dataset.id;
+      dropCleanup();
+      if (target && target.dataset.cat) {
+        try {
+          await api(`/api/list/${itemId}/move`, { method: "PATCH", body: { category: target.dataset.cat } });
+          toast(`Moved to ${target.dataset.cat}`);
+        } catch (err) {
+          toast(err.message, true);
+        }
+        loadList();
+      }
+    };
+    function dropCleanup() {
+      active = false;
+      clearGhost();
+    }
+    window.addEventListener("pointermove", move, { passive: false });
+    window.addEventListener("pointerup", finish);
+    window.addEventListener("pointercancel", finish);
+    document.addEventListener("touchmove", onTouchMove, { passive: false });
+  });
+})();
 
 async function quickAdd() {
   const input = $("quickAdd");

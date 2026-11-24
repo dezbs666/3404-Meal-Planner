@@ -26,6 +26,16 @@ no subscription, no company that can shut it down.
   batch any time. Recipes that need a tweak come with a swap note (e.g. "use
   tamari instead of soy sauce"), anything you're not interested in can be
   hidden with one tap, and *Hidden ideas* brings it back later.
+- **Fresh from the web** — below the presets, each Ideas load also pulls a
+  handful of real internet recipes from TheMealDB (no key or account needed)
+  and auto-checks them against your filters. Save any of them straight into
+  your library with the original link kept. **Full web refresh** swaps the
+  Ideas grid to a whole batch of fresh web finds (excluding everything
+  already shown this session); *This week's picks* brings back your staples.
+- **Drag & drop shopping list** — touch & hold (or click-hold) any list item
+  and drag it into another aisle section, e.g. your shorthand "violife shreds"
+  from Other into Dairy & Eggs. Sections you move things into stick, even
+  when you rebuild the list from the meal plan.
 
 ## Running it
 
@@ -90,6 +100,7 @@ To start fresh, just delete it.
 app.py            Flask server + REST API + SQLite
 recipe_import.py  schema.org JSON-LD / microdata recipe parsing
 suggestions.py    curated recipe ideas + dietary/equipment metadata
+web_suggestions.py live web recipe fetch (TheMealDB) + restriction classifier
 quantities.py     quantity parsing, unit normalization, aisle categories
 templates/        single-page UI
 static/           styles + frontend JS

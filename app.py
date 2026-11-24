@@ -12,6 +12,7 @@ from quantities import (
 )
 from recipe_import import fetch_recipe, extract_recipe
 from suggestions import SUGGESTIONS
+from web_suggestions import build_web_suggestions
 
 DB_PATH = os.environ.get(
     "MEALPLANNER_DB",
@@ -27,7 +28,15 @@ def get_db():
         g.db = sqlite3.connect(DB_PATH)
         g.db.row_factory = sqlite3.Row
         g.db.execute("PRAGMA foreign_keys = ON")
+        _ensure_shopping_columns(g.db)
     return g.db
+
+
+def _ensure_shopping_columns(db):
+    cols = {r["name"] for r in db.execute("PRAGMA table_info(shopping_items)")}
+    if "pinned" not in cols:
+        db.execute("ALTER TABLE shopping_items ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0")
+        db.commit()
 
 
 @app.teardown_appcontext
@@ -71,6 +80,7 @@ CREATE TABLE IF NOT EXISTS shopping_items (
     category TEXT DEFAULT 'Other',
     source TEXT DEFAULT 'custom',
     checked INTEGER NOT NULL DEFAULT 0,
+    pinned INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     UNIQUE(name, unit)
 );
@@ -372,6 +382,33 @@ def hidden_suggestions():
     return jsonify([r["title"] for r in rows])
 
 
+@app.get("/api/suggestions/web")
+def web_suggestions():
+    gf = request.args.get("gf") == "1"
+    no_beef = request.args.get("no_beef") == "1"
+    low_nightshade = request.args.get("low_nightshade") == "1"
+    complete = request.args.get("complete") == "1"
+    db = get_db()
+    hidden_titles = {r["title"] for r in db.execute("SELECT title FROM hidden_suggestions")}
+    saved_titles = {r["title"] for r in db.execute("SELECT title FROM recipes")}
+    exclude_titles = [t.strip() for t in request.args.get("exclude", "").split("|") if t.strip()]
+    try:
+        attempts = max(4, min(int(request.args.get("attempts") or 12), 32))
+        items = build_web_suggestions(
+            gf, no_beef, low_nightshade, complete,
+            attempts=attempts,
+            hidden_titles=hidden_titles,
+            saved_titles=saved_titles,
+            exclude_titles=exclude_titles,
+        )
+        return jsonify({"items": items, "notice": ""})
+    except Exception:
+        return jsonify({
+            "items": [],
+            "notice": "Couldn't reach the recipe web right now — preset ideas only.",
+        })
+
+
 @app.get("/api/plan")
 def get_plan():
     week_start = _week_start(request.args.get("week"))
@@ -525,10 +562,16 @@ def build_shopping_list():
             added += 1
         elif current["source"] == "plan":
             if not current["checked"]:
-                db.execute(
-                    "UPDATE shopping_items SET qty=?, unit=?, category=? WHERE id=?",
-                    (qty, unit, category, current["id"]),
-                )
+                if current["pinned"]:
+                    db.execute(
+                        "UPDATE shopping_items SET qty=?, unit=? WHERE id=?",
+                        (qty, unit, current["id"]),
+                    )
+                else:
+                    db.execute(
+                        "UPDATE shopping_items SET qty=?, unit=?, category=? WHERE id=?",
+                        (qty, unit, category, current["id"]),
+                    )
             updated += 1
     db.commit()
     return jsonify({"ok": True, "added": added, "updated": updated})
@@ -548,7 +591,7 @@ def get_shopping_list():
     for r in rows:
         grouped.setdefault(r["category"], []).append({
             "id": r["id"], "name": r["name"], "qty": r["qty"], "unit": r["unit"],
-            "checked": bool(r["checked"]), "source": r["source"],
+            "checked": bool(r["checked"]), "source": r["source"], "pinned": bool(r["pinned"]),
         })
     return jsonify(grouped)
 
@@ -595,6 +638,12 @@ def add_custom_item():
     return jsonify({"ok": True}), 201
 
 
+LIST_CATEGORIES = (
+    "Produce", "Meat & Seafood", "Dairy & Eggs", "Bakery",
+    "Pantry & Dry Goods", "Spices & Seasonings", "Frozen", "Beverages", "Other",
+)
+
+
 @app.patch("/api/list/<int:item_id>")
 def toggle_item(item_id):
     db = get_db()
@@ -613,6 +662,24 @@ def delete_item(item_id):
     db.commit()
     if cur.rowcount == 0:
         return jsonify({"error": "Item not found."}), 404
+    return jsonify({"ok": True})
+
+
+@app.patch("/api/list/<int:item_id>/move")
+def move_list_item(item_id):
+    data = request.get_json(force=True)
+    category = str(data.get("category", "")).strip()
+    if category not in LIST_CATEGORIES:
+        return jsonify({"error": "Unknown section."}), 400
+    db = get_db()
+    row = db.execute("SELECT id FROM shopping_items WHERE id = ?", (item_id,)).fetchone()
+    if row is None:
+        return jsonify({"error": "Item not found."}), 404
+    db.execute(
+        "UPDATE shopping_items SET category = ?, pinned = 1 WHERE id = ?",
+        (category, item_id),
+    )
+    db.commit()
     return jsonify({"ok": True})
 
 

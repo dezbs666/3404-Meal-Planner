@@ -46,11 +46,12 @@
     <div class="toolbar subtle" style="justify-content:space-between">
       <span id="ideaCount" class="hint"></span>
       <span class="toolbar" style="gap:8px;margin:0">
-        <button id="btnNewIdeas" class="ghost">🔄 New ideas</button>
+        <button id="btnWeekPicks" class="ghost hidden">⭐ This week's picks</button>
+        <button id="btnNewIdeas" class="ghost">🔄 Full web refresh</button>
         <button id="btnHiddenIdeas" class="ghost">Hidden ideas</button>
       </span>
     </div>
-    <p class="hint" style="margin:0 0 10px">Never includes Brussels sprouts. A fresh lineup every Monday — tap <b>New ideas</b> for a different batch. Recipes that need a small tweak come with a yellow swap note.</p>
+    <p class="hint" style="margin:0 0 10px">Never includes Brussels sprouts. A fresh lineup every Monday; tap <b>Full web refresh</b> for a whole batch of new recipes pulled from the internet. Recipes that need a small tweak come with a yellow swap note.</p>
     <div id="ideaGrid" class="recipe-grid"></div>
     <div id="ideaEmpty" class="empty hidden">No suggestions match right now — try un-ticking a filter.</div>
   </section>
@@ -71,6 +72,7 @@
       <input id="quickAdd" type="text" placeholder="Add an item (e.g. 2 lb potatoes)…">
       <button id="btnQuickAdd" class="primary">Add</button>
     </div>
+    <p class="hint" style="margin:0 0 8px">Tip: touch &amp; hold an item, then drag it to another section.</p>
     <div class="toolbar subtle">
       <button id="btnHideChecked" class="ghost">Hide checked</button>
       <button id="btnClearChecked" class="ghost">Remove checked</button>
