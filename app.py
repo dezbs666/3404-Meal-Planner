@@ -11,6 +11,7 @@ from quantities import (
     merge_ingredient_name, parse_quantity, unit_family,
 )
 from recipe_import import fetch_recipe, extract_recipe
+from suggestions import SUGGESTIONS
 
 DB_PATH = os.environ.get(
     "MEALPLANNER_DB",
@@ -289,6 +290,44 @@ def _insert_recipe(parsed):
     db.commit()
     row = db.execute("SELECT * FROM recipes WHERE id = ?", (cur.lastrowid,)).fetchone()
     return recipe_row_to_dict(row)
+
+
+@app.get("/api/suggestions")
+def list_suggestions():
+    gf = request.args.get("gf") == "1"
+    no_beef = request.args.get("no_beef") == "1"
+    low_nightshade = request.args.get("low_nightshade") == "1"
+    equipment = request.args.get("equipment", "")
+    results = []
+    for s in SUGGESTIONS:
+        has_beef = bool(s.get("beef"))
+        if gf and s.get("gf") is False:
+            continue
+        if no_beef and has_beef and not s.get("beef_swap"):
+            continue
+        if low_nightshade and s.get("nightshade") == "heavy":
+            continue
+        eq = set(s.get("equipment", []))
+        if equipment == "oven" and "oven" not in eq:
+            continue
+        if equipment == "stovetop" and not eq & {"skillet", "pot"}:
+            continue
+        if equipment == "instantpot" and "instant pot" not in eq:
+            continue
+        if equipment == "sousvide" and "sous vide" not in eq:
+            continue
+        perfect = True
+        if gf and s.get("gf") is not True:
+            perfect = False
+        if no_beef and has_beef:
+            perfect = False
+        if low_nightshade and s.get("nightshade") != "none":
+            perfect = False
+        out = dict(s)
+        out["perfect"] = perfect
+        results.append(out)
+    results.sort(key=lambda r: not r["perfect"])
+    return jsonify(results)
 
 
 @app.get("/api/plan")

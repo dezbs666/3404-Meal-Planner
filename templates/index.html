@@ -12,6 +12,7 @@
   <h1>🍳 Family Meals</h1>
   <nav>
     <button class="tab active" data-tab="recipes">Recipes</button>
+    <button class="tab" data-tab="ideas">Ideas</button>
     <button class="tab" data-tab="planner">Plan</button>
     <button class="tab" data-tab="list">List <span id="listBadge" class="badge hidden">0</span></button>
   </nav>
@@ -26,6 +27,24 @@
     </div>
     <div id="recipeGrid" class="recipe-grid"></div>
     <div id="recipeEmpty" class="empty hidden">No recipes yet. Import one from a webpage, or tap <b>+ Add</b> to write your own.</div>
+  </section>
+
+  <section id="tab-ideas" class="tab-page hidden">
+    <div class="toolbar">
+      <label class="filter-check"><input type="checkbox" id="fGf"> Gluten-free</label>
+      <label class="filter-check"><input type="checkbox" id="fNoBeef"> No beef</label>
+      <label class="filter-check"><input type="checkbox" id="fNs" checked> Easy on nightshades &amp; potatoes</label>
+    </div>
+    <div class="toolbar subtle" id="equipChips">
+      <button class="chip active" data-eq="">All our equipment</button>
+      <button class="chip" data-eq="oven">Oven</button>
+      <button class="chip" data-eq="stovetop">Stovetop</button>
+      <button class="chip" data-eq="instantpot">Instant Pot</button>
+      <button class="chip" data-eq="sousvide">Sous vide</button>
+    </div>
+    <p class="hint" style="margin:0 0 10px">Never includes Brussels sprouts. Recipes that need a small tweak come with a yellow swap note.</p>
+    <div id="ideaGrid" class="recipe-grid"></div>
+    <div id="ideaEmpty" class="empty hidden">No suggestions match right now — try un-ticking a filter.</div>
   </section>
 
   <section id="tab-planner" class="tab-page hidden">
@@ -96,6 +115,14 @@
   <label class="servings-choose">Servings <input id="planServings" type="number" min="1" value="4"></label>
   <div class="dialog-actions">
     <button type="button" class="ghost" onclick="dlgPlanDays.close()">Cancel</button>
+  </div>
+</dialog>
+
+<dialog id="dlgSuggest" class="sheet">
+  <div id="suggestBody"></div>
+  <div class="dialog-actions">
+    <button type="button" class="ghost" onclick="dlgSuggest.close()">Close</button>
+    <button type="button" class="primary" id="btnSaveSuggestion">Save to my recipes</button>
   </div>
 </dialog>
 

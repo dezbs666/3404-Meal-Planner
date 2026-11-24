@@ -1,4 +1,4 @@
-/* global dlgRecipe, dlgView, dlgPlanDays, dlgImport */
+/* global dlgRecipe, dlgView, dlgPlanDays, dlgImport, dlgSuggest */
 
 const $ = (id) => document.getElementById(id);
 const state = {
@@ -9,6 +9,7 @@ const state = {
   viewingRecipe: null,
   editingRecipe: null,
   hideChecked: false,
+  currentSuggestion: null,
 };
 
 function toast(msg, isError) {
@@ -36,7 +37,7 @@ async function api(path, options = {}) {
 document.querySelectorAll(".tab").forEach((btn) => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".tab").forEach((b) => b.classList.toggle("active", b === btn));
-    ["recipes", "planner", "list"].forEach((t) => {
+    ["recipes", "planner", "list", "ideas"].forEach((t) => {
       $(`tab-${t}`).classList.toggle("hidden", t !== btn.dataset.tab);
     });
     refreshTab(btn.dataset.tab);
@@ -47,6 +48,7 @@ function refreshTab(tab) {
   if (tab === "recipes") loadRecipes();
   if (tab === "planner") loadPlan();
   if (tab === "list") loadList();
+  if (tab === "ideas") loadIdeas();
 }
 
 /* ---------- recipes ---------- */
@@ -193,6 +195,108 @@ $("btnDeleteRecipe").addEventListener("click", async () => {
   $("dlgView").close();
   toast("Recipe deleted");
   loadRecipes();
+});
+
+/* ---------- ideas (suggestions) ---------- */
+const EQUIPMENT_NAMES = {
+  oven: "Oven",
+  skillet: "Cast-iron skillet",
+  pot: "Pot",
+  "instant pot": "Instant Pot",
+  "sous vide": "Sous vide",
+};
+let ideaEquipment = "";
+
+["fGf", "fNoBeef", "fNs"].forEach((id) => {
+  $(id).addEventListener("change", loadIdeas);
+});
+$("equipChips").querySelectorAll(".chip").forEach((chip) => {
+  chip.addEventListener("click", () => {
+    ideaEquipment = chip.dataset.eq;
+    $("equipChips").querySelectorAll(".chip").forEach((c) => c.classList.toggle("active", c === chip));
+    loadIdeas();
+  });
+});
+
+async function loadIdeas() {
+  const params = new URLSearchParams();
+  if ($("fGf").checked) params.set("gf", "1");
+  if ($("fNoBeef").checked) params.set("no_beef", "1");
+  if ($("fNs").checked) params.set("low_nightshade", "1");
+  params.set("equipment", ideaEquipment);
+  const ideas = await api(`/api/suggestions?${params}`);
+  renderIdeas(ideas);
+}
+
+function renderIdeas(ideas) {
+  const grid = $("ideaGrid");
+  grid.innerHTML = "";
+  $("ideaEmpty").classList.toggle("hidden", ideas.length > 0);
+  for (const s of ideas) {
+    const card = document.createElement("div");
+    card.className = "recipe-card" + (s.perfect ? "" : " adaptable");
+    card.innerHTML = `
+      <div class="title"></div>
+      <div class="meta"></div>
+      <div class="tags">${s.tags.map(() => `<span class="tagpill"></span>`).join("")}</div>
+      ${s.perfect ? "" : `<div class="swappill">needs a small tweak</div>`}
+    `;
+    card.querySelector(".title").textContent = s.title;
+    card.querySelector(".meta").textContent =
+      `Serves ${s.servings} · ${s.total_time} · ${s.equipment.join(", ")}`;
+    card.querySelectorAll(".tagpill").forEach((el, i) => { el.textContent = s.tags[i]; });
+    card.addEventListener("click", () => viewSuggestion(s));
+    grid.appendChild(card);
+  }
+}
+
+function viewSuggestion(s) {
+  state.currentSuggestion = s;
+  let html = `<h2 class="v-title"></h2>
+    <div class="v-meta">Serves ${s.servings} · ${s.total_time}</div>
+    <h4>You'll need</h4><div class="v-equip"></div>
+    <h4>Ingredients</h4><ul>${s.ingredients.map((i) => `<li>${esc(i)}</li>`).join("")}</ul>
+    <h4>Instructions</h4><ol>${s.instructions.map((i) => `<li>${esc(i)}</li>`).join("")}</ol>`;
+  const notes = [];
+  if (s.gf && s.gf !== true) notes.push(`Gluten-free: ${s.gf}`);
+  if (s.beef && s.beef_swap) notes.push(`No beef: ${s.beef_swap}`);
+  if (s.ns_note) notes.push(s.ns_note);
+  if (notes.length) html += `<div class="v-notes swap-notes"><b>Good to know</b>${notes.map((n) => `<div>• ${esc(n)}</div>`).join("")}</div>`;
+  else html += `<div class="v-notes ok-note">Fits all your filters as written ✓</div>`;
+  const body = $("suggestBody");
+  body.innerHTML = html;
+  body.querySelector(".v-title").textContent = s.title;
+  body.querySelector(".v-equip").textContent =
+    s.equipment.length ? s.equipment.map((e) => EQUIPMENT_NAMES[e] || e).join(" · ") : "just basics";
+  $("dlgSuggest").showModal();
+}
+
+$("btnSaveSuggestion").addEventListener("click", async () => {
+  const s = state.currentSuggestion;
+  if (!s) return;
+  const notes = [];
+  if (s.gf && s.gf !== true) notes.push(`Gluten-free: ${s.gf}`);
+  if (s.beef && s.beef_swap) notes.push(`No beef: ${s.beef_swap}`);
+  if (s.ns_note) notes.push(s.ns_note);
+  try {
+    await api("/api/recipes", {
+      method: "POST",
+      body: {
+        title: s.title,
+        servings: s.servings,
+        total_time: s.total_time,
+        ingredients: s.ingredients,
+        instructions: s.instructions.join("\n"),
+        tags: [...s.tags, "suggestion"].join(", "),
+        notes: notes.join(" "),
+      },
+    });
+    dlgSuggest.close();
+    toast(`Saved “${s.title}” to your recipes`);
+    document.querySelector('.tab[data-tab="recipes"]').click();
+  } catch (err) {
+    toast(err.message, true);
+  }
 });
 
 /* ---------- planner ---------- */
